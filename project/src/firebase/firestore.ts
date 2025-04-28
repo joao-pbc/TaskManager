@@ -50,6 +50,12 @@ export const createTask = async (task: Omit<Task, 'id'>): Promise<string> => {
 export const updateTask = async (taskId: string, updates: Partial<Task>): Promise<void> => {
   try {
     const taskRef = doc(db, 'tasks', taskId);
+    const taskDoc = await getDoc(taskRef);
+    
+    if (!taskDoc.exists()) {
+      throw new Error(`Task with id ${taskId} not found in Firestore`);
+    }
+
     await updateDoc(taskRef, updates);
   } catch (error) {
     console.error("Error updating task: ", error);

@@ -88,15 +88,24 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     setError(null);
     try {
-      await firestore.updateTask(taskId, { status });
-      
-      // Update the task in local state
+      // First check if the task exists in our local state
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) {
+        throw new Error(`Task with id ${taskId} not found`);
+      }
+
+      // Update local state first to make the UI feel more responsive
       setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, status } : task
+        prev.map(t => 
+          t.id === taskId ? { ...t, status } : t
         )
       );
+
+      // Then update in Firestore
+      await firestore.updateTask(taskId, { status });
     } catch (err) {
+      // Revert the local state change if the server update fails
+      setTasks(prev => [...prev]);
       setError(err instanceof Error ? err.message : 'Failed to update task');
       console.error(err);
     } finally {
