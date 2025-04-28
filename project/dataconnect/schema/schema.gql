@@ -1,0 +1,27 @@
+type User @table {
+  id: String! @default(expr: "auth.uid")
+  email: String!
+  name: String!
+  createdAt: String!
+}
+
+type Task @table {
+  id: UUID! @default(expr: "uuidV4()")
+  title: String!
+  description: String
+  status: String!
+  userId: String!
+  createdAt: String!
+  user: User! @foreign(fields: ["userId"])
+  activities: [Activity!]!
+}
+
+type Activity @table {
+  id: String!
+  taskId: UUID!
+  task: Task! @foreign(fields: ["taskId"])
+  title: String!
+  description: String
+  completed: Boolean!
+  createdAt: String!
+}

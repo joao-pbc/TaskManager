@@ -1,0 +1,124 @@
+# # Example mutations for a simple movie app
+
+# # Create a movie based on user input
+# mutation CreateMovie($title: String!, $genre: String!, $imageUrl: String!)
+# @auth(level: USER_EMAIL_VERIFIED) {
+#   movie_insert(data: { title: $title, genre: $genre, imageUrl: $imageUrl })
+# }
+
+# # Upsert (update or insert) a user's username based on their auth.uid
+# mutation UpsertUser($username: String!) @auth(level: USER) {
+#   # The "auth.uid" server value ensures that users can only register their own user.
+#   user_upsert(data: { id_expr: "auth.uid", username: $username })
+# }
+
+# # Add a review for a movie
+# mutation AddReview($movieId: UUID!, $rating: Int!, $reviewText: String!)
+# @auth(level: USER) {
+#   review_upsert(
+#     data: {
+#       userId_expr: "auth.uid"
+#       movieId: $movieId
+#       rating: $rating
+#       reviewText: $reviewText
+#       # reviewDate defaults to today in the schema. No need to set it manually.
+#     }
+#   )
+# }
+
+# # Logged in user can delete their review for a movie
+# mutation DeleteReview($movieId: UUID!) @auth(level: USER) {
+#   # The "auth.uid" server value ensures that users can only delete their own reviews.
+#   review_delete(key: { userId_expr: "auth.uid", movieId: $movieId })
+# }
+
+# Create a new task
+mutation CreateTask($title: String!, $description: String, $status: String!) @auth(level: USER) {
+  insertTask(
+    value: {
+      title: $title
+      description: $description
+      status: $status
+      userId: "auth.uid"
+      createdAt: "now()"
+    }
+  ) {
+    id
+    title
+    description
+    status
+    createdAt
+  }
+}
+
+# Update an existing task
+mutation UpdateTask($id: UUID!, $title: String, $description: String, $status: String) @auth(level: USER) {
+  updateTask(
+    id: $id
+    value: {
+      title: $title
+      description: $description
+      status: $status
+    }
+    where: { userId: { eq: "auth.uid" } }
+  ) {
+    id
+    title
+    description
+    status
+    updatedAt: createdAt
+  }
+}
+
+# Delete a task
+mutation DeleteTask($id: UUID!) @auth(level: USER) {
+  deleteTask(
+    id: $id
+    where: { userId: { eq: "auth.uid" } }
+  ) {
+    id
+  }
+}
+
+# Create a new activity for a task
+mutation CreateActivity($taskId: UUID!, $title: String!, $description: String) @auth(level: USER) {
+  insertActivity(
+    value: {
+      taskId: $taskId
+      title: $title
+      description: $description
+      completed: false
+      createdAt: "now()"
+    }
+  ) {
+    id
+    title
+    description
+    completed
+    createdAt
+  }
+}
+
+# Update an activity
+mutation UpdateActivity($id: String!, $title: String, $description: String, $completed: Boolean) @auth(level: USER) {
+  updateActivity(
+    id: $id
+    value: {
+      title: $title
+      description: $description
+      completed: $completed
+    }
+  ) {
+    id
+    title
+    description
+    completed
+  }
+}
+
+# Delete an activity
+mutation DeleteActivity($id: String!) @auth(level: USER) {
+  deleteActivity(id: $id) {
+    id
+  }
+}
