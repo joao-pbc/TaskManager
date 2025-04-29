@@ -44,33 +44,38 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ title, status, tasks, isDraggin
       </div>
       
       <Droppable droppableId={status}>
-        {(provided, snapshot) => (
+        {(provided) => (
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className={`p-3 flex-grow overflow-y-auto transition-colors ${snapshot.isDraggingOver ? 'bg-indigo-50/50' : ''}`}
-            style={{ minHeight: '200px' }}
+            className="p-3 flex-grow"
           >
-            {tasks.length === 0 ? (
-              <div className="text-center text-gray-500 mt-4">
-                No tasks yet
-              </div>
-            ) : (
-              tasks.map((task, index) => (
-                <Draggable key={task.id} draggableId={task.id} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`mb-3 last:mb-0 transition-transform ${snapshot.isDragging ? 'rotate-1 scale-105' : ''}`}
-                    >
-                      <TaskCard task={task} />
-                    </div>
-                  )}
-                </Draggable>
-              ))
-            )}
+            {tasks.map((task, index) => (
+              <Draggable 
+                key={task.id} 
+                draggableId={task.id} 
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className="mb-3"
+                    style={{
+                      ...provided.draggableProps.style,
+                      position: snapshot.isDragging ? 'fixed' : 'relative',
+                      top: snapshot.isDragging ? `${snapshot.draggingOver ? 0 : 0}px` : 'auto',
+                      left: snapshot.isDragging ? `${snapshot.draggingOver ? 0 : 0}px` : 'auto',
+                      width: snapshot.isDragging ? 'auto' : '100%',
+                      zIndex: snapshot.isDragging ? 9999 : 'auto'
+                    }}
+                  >
+                    <TaskCard task={task} />
+                  </div>
+                )}
+              </Draggable>
+            ))}
             {provided.placeholder}
           </div>
         )}

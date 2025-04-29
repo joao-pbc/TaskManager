@@ -43,19 +43,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   };
 
   return (
-    <div className="bg-white rounded-md shadow p-4 border border-gray-200 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <h4 className="font-semibold text-gray-800">{task.title}</h4>
-        <button
-          onClick={handleDeleteTask}
-          className="text-red-500 hover:text-red-700 p-1"
-          aria-label="Delete task"
-        >
-          <Trash size={16} />
-        </button>
+    <div className="relative bg-white p-3 rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow touch-none">
+      <div className="flex justify-between items-start gap-2">
+        <h4 className="font-medium text-gray-800 flex-grow">{task.title}</h4>
+        <div className="flex-shrink-0">
+          {task.priority && (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </span>
+          )}
+        </div>
       </div>
-      
-      <p className="text-sm text-gray-600 mt-1 mb-2">{task.description}</p>
+      {task.description && (
+        <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+      )}
       
       {/* Progress bar */}
       {task.activities.length > 0 && (

@@ -27,11 +27,20 @@ const KanbanBoard: React.FC = () => {
   const handleDragStart = (initial: DragStart) => {
     setIsDragging(true);
     setDragError(null);
+    
+    // Adiciona classe no body para prevenir scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.userSelect = 'none';
   };
 
   // Handle drag end
   const handleDragEnd = async (result: DropResult) => {
     setIsDragging(false);
+    
+    // Remove as restrições de scroll
+    document.body.style.overflow = '';
+    document.body.style.userSelect = '';
+    
     const { draggableId, destination, source } = result;
     
     // If dropped outside a droppable area or in the same position
@@ -51,6 +60,11 @@ const KanbanBoard: React.FC = () => {
     const newStatus = destination.droppableId as TaskStatus;
     
     try {
+      // Reordenar as tasks localmente antes de atualizar o status
+      const updatedTasks = Array.from(tasks);
+      const [movedTask] = updatedTasks.splice(source.index, 1);
+      updatedTasks.splice(destination.index, 0, { ...movedTask, status: newStatus });
+      
       // Update task status in firestore and local state
       await updateTaskStatus(draggableId, newStatus);
     } catch (error) {
@@ -89,17 +103,23 @@ const KanbanBoard: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
         </div>
       ) : (
-        <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 h-full ${isDragging ? 'cursor-grabbing' : ''}`}>
-            {columns.map((column) => (
-              <TaskColumn
-                key={column.id}
-                title={column.title}
-                status={column.id}
-                tasks={tasksByStatus[column.id] || []}
-                isDragging={isDragging}
-              />
-            ))}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <TaskColumn
+              title="To Do"
+              status="todo"
+              tasks={tasksByStatus['todo'] || []}
+            />
+            <TaskColumn
+              title="In Progress"
+              status="in-progress"
+              tasks={tasksByStatus['in-progress'] || []}
+            />
+            <TaskColumn
+              title="Done"
+              status="done"
+              tasks={tasksByStatus['done'] || []}
+            />
           </div>
         </DragDropContext>
       )}
